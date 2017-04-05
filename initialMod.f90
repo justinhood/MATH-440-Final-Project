@@ -13,7 +13,19 @@ contains
                         enddo
                 enddo
         end subroutine initializeGrid
-        
+       
+        subroutine doStep(grid, gridSize)
+                implicit none
+                double precision, dimension(gridSize, gridSize), intent(inout) :: grid
+                double precision, dimension(gridSize, gridSize) :: doStep
+                do i=1, gridSize
+                        do j=1, gridSize
+                                doStep(i,j)=stepFunction(grid(i,j))
+                        enddo
+                enddo
+
+        end subroutine doStep
+
         function initialCondition(x,y)
                 implicit none
                 integer, intent(in) :: x,y
@@ -21,6 +33,13 @@ contains
 
                 initialCondition=x*y
         end function initialCondition
+
+        function stepFunction(x)
+                implicit none
+                integer, intent(in):: x
+                integer :: stepFunction
+                stepFunction=x-1
+        end function stepFunction
 
 
 end module initialMod
