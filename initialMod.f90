@@ -16,9 +16,9 @@ contains
        
         subroutine doStep(master_grid, new_grid, grid_row, grid_col)
                 implicit none
+                integer :: i,j, grid_row, grid_col
                 double precision, dimension(grid_row, grid_col), intent(in) :: master_grid
                 double precision, dimension(grid_row, grid_col), intent(inout) :: new_grid
-                integer :: i,j
                 
                 do i=1, grid_row
                         do j=1, grid_col
