@@ -1,4 +1,4 @@
-module initialModule
+module initialMod
 contains
         subroutine initializeGrid(master_grid)
                 implicit none
@@ -12,7 +12,7 @@ contains
                                 master_grid(i,j)=initialCondition(i,j)
                         enddo
                 enddo
-        end subroutine initalizeGrid()
+        end subroutine initializeGrid
         
         function initialCondition(x,y)
                 implicit none
@@ -23,4 +23,4 @@ contains
         end function initialCondition
 
 
-end module initialModule
+end module initialMod
