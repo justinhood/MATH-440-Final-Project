@@ -14,13 +14,13 @@ contains
                 enddo
         end subroutine initializeGrid
        
-        subroutine doStep(grid, gridSize)
+        subroutine doStep(master_grid, new_grid, grid_row, grid_col)
                 implicit none
-                double precision, dimension(gridSize, gridSize), intent(inout) :: grid
-                double precision, dimension(gridSize, gridSize) :: doStep
-                do i=1, gridSize
-                        do j=1, gridSize
-                                doStep(i,j)=stepFunction(grid(i,j))
+                double precision, dimension(grid_row, grid_col), intent(in) :: master_grid
+                double precision, dimension(grid_row, grid_col), intent(inout) :: new_grid
+                do i=1, grid_row
+                        do j=1, grid_col
+                                new_grid(i,j)=stepFunction(master_grid(i,j))
                         enddo
                 enddo
 
