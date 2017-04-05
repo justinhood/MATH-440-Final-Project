@@ -26,7 +26,8 @@ contains
                 
                 do i=2, grid_row-1
                         do j=2, grid_col-1
-                                new_grid(i,j)=stepFunction(master_grid(i,j), master_grid(i-1,j), master_grid(i+1,j), master_grid(i,j-1), master_grid(i,j+1))
+                                new_grid(i,j)=stepFunction(master_grid(i,j), master_grid(i-1,j), master_grid(i+1,j) &
+                                        , master_grid(i,j-1), master_grid(i,j+1))
                         enddo
                 enddo
 
@@ -44,7 +45,7 @@ contains
                 implicit none
                 double precision, intent(in):: v, vineg, vipos, vjneg, vjpos
                 integer :: stepFunction
-                stepFunction=v+(vipos-2v+vineg)+(vjpos-2v+vjneg)
+                stepFunction=v+(vipos-2*v+vineg)+(vjpos-2*v+vjneg)
         end function stepFunction
 
 
