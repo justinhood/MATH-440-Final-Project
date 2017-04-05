@@ -18,6 +18,8 @@ contains
                 implicit none
                 double precision, dimension(grid_row, grid_col), intent(in) :: master_grid
                 double precision, dimension(grid_row, grid_col), intent(inout) :: new_grid
+                integer :: i,j
+                
                 do i=1, grid_row
                         do j=1, grid_col
                                 new_grid(i,j)=stepFunction(master_grid(i,j))
