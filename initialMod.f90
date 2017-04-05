@@ -9,7 +9,10 @@ contains
 
                 do i=1, size(master_grid, 1)
                         do j=1, size(master_grid, 2)
-                                master_grid(i,j)=initialCondition(i,j)
+                                if(i .ne. 5 .and. j .ne. 5) then 
+                                        master_grid(i,j)=0
+                                else
+                                        master_grid(i,j)=100
                         enddo
                 enddo
         end subroutine initializeGrid
@@ -20,9 +23,9 @@ contains
                 double precision, dimension(grid_row, grid_col), intent(in) :: master_grid
                 double precision, dimension(grid_row, grid_col), intent(inout) :: new_grid
                 
-                do i=1, grid_row
-                        do j=1, grid_col
-                                new_grid(i,j)=stepFunction(master_grid(i,j))
+                do i=2, grid_row-1
+                        do j=2, grid_col-1
+                                new_grid(i,j)=stepFunction(master_grid(i,j), master_grid(i-1,j), master_grid(i+1,j), master_grid(i,j-1), master_grid(i,j+1))
                         enddo
                 enddo
 
@@ -36,11 +39,11 @@ contains
                 initialCondition=x*y
         end function initialCondition
 
-        function stepFunction(x)
+        function stepFunction(v, vineg, vipos, vjneg, vjpos)
                 implicit none
-                double precision, intent(in):: x
+                double precision, intent(in):: v, vineg, vipos, vjneg, vjpos
                 integer :: stepFunction
-                stepFunction=x-1
+                stepFunction=v+(vipos-2v+vineg)+(vjpos-2v+vjneg)
         end function stepFunction
 
 
