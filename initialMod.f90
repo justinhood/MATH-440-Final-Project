@@ -13,6 +13,7 @@ contains
                                         master_grid(i,j)=0
                                 else
                                         master_grid(i,j)=100
+                                endif
                         enddo
                 enddo
         end subroutine initializeGrid
