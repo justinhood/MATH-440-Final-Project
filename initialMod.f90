@@ -9,10 +9,10 @@ contains
 
                 do i=1, size(master_grid, 1)
                         do j=1, size(master_grid, 2)
-                                if(i .ne. 5 .and. j .ne. 5) then 
-                                        master_grid(i,j)=0
-                                else
+                                if(i .eq. 5 .and. j .eq. 5) then 
                                         master_grid(i,j)=100
+                                else
+                                        master_grid(i,j)=0
                                 endif
                         enddo
                 enddo
