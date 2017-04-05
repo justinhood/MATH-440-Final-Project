@@ -38,7 +38,7 @@ contains
 
         function stepFunction(x)
                 implicit none
-                integer, intent(in):: x
+                double precision, intent(in):: x
                 integer :: stepFunction
                 stepFunction=x-1
         end function stepFunction
