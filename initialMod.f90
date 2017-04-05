@@ -45,7 +45,7 @@ contains
                 implicit none
                 double precision, intent(in):: v, vineg, vipos, vjneg, vjpos
                 integer :: stepFunction
-                stepFunction=v+(vipos-2*v+vineg)+(vjpos-2*v+vjneg)
+                stepFunction=v+.01*((vipos-2*v+vineg)+(vjpos-2*v+vjneg))
         end function stepFunction
 
 
