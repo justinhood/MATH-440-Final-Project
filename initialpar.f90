@@ -115,11 +115,6 @@ program initialpar
              MPI_COMM_WORLD, mpi_status, ierror)
         CALL MPI_Recv(concat_grid(:,div+2), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*3*(my_rank+1), &
              MPI_COMM_WORLD, mpi_status, ierror)
-        
-        !do i = 1,grid_row
-         ! print *, (concat_grid(i,j), j = 1, div+2)
-       ! end do
-        !print *, ''
 
         ! Do one step of the numerical method
         CALL doStep(concat_grid, grid_row, div+2, t_step, x_scale, y_scale)
@@ -138,11 +133,6 @@ program initialpar
         
         CALL MPI_Recv(concat_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*2*(my_rank), &
              MPI_COMM_WORLD, mpi_status, ierror)
-        
-       ! do i = 1,grid_row
-       !    print *, (concat_grid(i,j), j = 1, rem+1)
-       ! end do
-       ! print *, ''
 
         ! Do one step of the numerical method
         CALL doStep(concat_grid, grid_row, rem+1, t_step, x_scale, y_scale)
@@ -152,19 +142,21 @@ program initialpar
         do i = 1,grid_row
            !print *, (send_grid(i,j), j = 1, rem)
         end do
-         !print *, ''
+        print *, ''
 
       end if
 
       if (my_rank .NE. num_cores-1) then
-       ! CALL MPI_Gather(send_grid, grid_row*div, MPI_DOUBLE_PRECISION, master_grid, & 
-       !      grid_row*div, MPI_DOUBLE_PRECISION, master, MPI_COMM_WORLD, ierror)
-              
-        if (my_rank == master) then
-        CALL MPI_Recv(master_grid(:,grid_col-rem+1:grid_col), grid_row*rem, MPI_DOUBLE_PRECISION, &
-             num_cores-1, tag*4*(num_cores-1), MPI_COMM_WORLD, mpi_status, ierror)
-        endif
-      else
+         CALL MPI_Gather(send_grid, grid_row*div, MPI_DOUBLE_PRECISION, master_grid, & 
+             grid_row*div, MPI_DOUBLE_PRECISION, master, MPI_COMM_WORLD, ierror)
+        
+         if (my_rank == master) then
+            CALL MPI_Recv(master_grid(:,grid_col-rem+1:grid_col), grid_row*rem, MPI_DOUBLE_PRECISION, &
+                num_cores-1, tag*4*(num_cores-1), MPI_COMM_WORLD, mpi_status, ierror)
+         end if
+         
+     
+     else
         CALL MPI_Send(send_grid, grid_row*rem, MPI_DOUBLE_PRECISION, master, my_rank*4*tag, &
              MPI_COMM_WORLD, ierror)
        
@@ -178,6 +170,7 @@ program initialpar
            write(23, *) (master_grid(i,j), j = 1, grid_col)
         end do
 
+        close(23)
      end if
 
      
