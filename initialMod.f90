@@ -39,11 +39,11 @@ contains
                 initialCondition=x*y
         end function initialCondition
 
-        function stepFunction(v, vineg, vipos, vjneg, vjpos)
+        function stepFunction(v, vineg, vipos, vjneg, vjpos, t_step, x_scale, y_scale)
                 implicit none
-                double precision, intent(in):: v, vineg, vipos, vjneg, vjpos
+                double precision, intent(in):: v, vineg, vipos, vjneg, vjpos, t_step, x_scale, y_scale
                 double precision :: stepFunction
-                stepFunction=v+.1D0*((vipos-2*v+vineg)+(vjpos-2*v+vjneg))
+                stepFunction=v+t_step*(((vipos-2*v+vineg)/x_scale)+((vjpos-2*v+vjneg)/y_scale))
         end function stepFunction
 
 
