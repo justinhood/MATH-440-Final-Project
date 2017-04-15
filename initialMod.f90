@@ -47,7 +47,7 @@ contains
                 implicit none
                 double precision, intent(in):: v, vineg, vipos, vjneg, vjpos, t_step, x_scale, y_scale
                 double precision :: stepFunction
-                stepFunction=v+t_step*(((vipos-2.0D0*v+vineg)/x_scale)+((vjpos-2.0D0*v+vjneg)/y_scale))
+                stepFunction=DBLE(v+t_step*(((vipos-2.0D0*v+vineg)/x_scale)+((vjpos-2.0D0*v+vjneg)/y_scale)))
         end function stepFunction
 
 

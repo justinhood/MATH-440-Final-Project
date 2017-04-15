@@ -140,15 +140,15 @@ program initialpar
         send_grid = concat_grid(:,2:rem+1)
 
         do i = 1,grid_row
-           !print *, (send_grid(i,j), j = 1, rem)
+           print *, (send_grid(i,j), j = 1, rem)
         end do
         print *, ''
 
       end if
 
       if (my_rank .NE. num_cores-1) then
-         CALL MPI_Gather(send_grid, grid_row*div, MPI_DOUBLE_PRECISION, master_grid, & 
-             grid_row*div, MPI_DOUBLE_PRECISION, master, MPI_COMM_WORLD, ierror)
+!         CALL MPI_Gather(send_grid, grid_row*div, MPI_DOUBLE_PRECISION, master_grid, & 
+!             grid_row*div, MPI_DOUBLE_PRECISION, master, MPI_COMM_WORLD, ierror)
         
          if (my_rank == master) then
             CALL MPI_Recv(master_grid(:,grid_col-rem+1:grid_col), grid_row*rem, MPI_DOUBLE_PRECISION, &
@@ -170,7 +170,6 @@ program initialpar
            write(23, *) (master_grid(i,j), j = 1, grid_col)
         end do
 
-        close(23)
      end if
 
      
@@ -179,7 +178,7 @@ program initialpar
 
   ! Close file
   close(21)
-  close(23)
+  !close(23)
 
   CALL MPI_Finalize(ierror)  
 
