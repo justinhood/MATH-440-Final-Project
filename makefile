@@ -1,6 +1,6 @@
-FC90 = gfortran
+FC90 = mpif90
 
-main_file = initialserial.f90 initialMod.f90
+main_file = initialpar.f90 initialMod.f90
 
 
 all: main_exe 
