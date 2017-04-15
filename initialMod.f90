@@ -2,7 +2,8 @@ module initialMod
 contains
         subroutine initializeGrid(master_grid, grid_row, grid_col, x_scale, y_scale, x_min, y_min)
                 implicit none
-                double precision, intent(in) :: grid_row, grid_col, x_scale, y_scale, x_min, y_min
+                integer, intent(in) :: grid_row, grid_col 
+                double precision, intent(in) :: x_scale, y_scale, x_min, y_min
                 double precision, dimension(grid_row, grid_col), intent(inout) :: master_grid
                 integer :: i, j
 
