@@ -11,7 +11,7 @@ contains
 
                 do i=0, grid_row-1
                         do j=0, grid_col-1
-                                master_grid(i+1,j+1)=(DBLE(j*x_scale)+x_min)+(DBLE(i*y_scale)+y_min)
+                                master_grid(i+1,j+1)=(DBLE(j*x_scale)+x_min)+sin((DBLE(i*y_scale)+y_min))
                         enddo
                 enddo
         end subroutine initializeGrid
@@ -47,7 +47,7 @@ contains
                 implicit none
                 double precision, intent(in):: v, vineg, vipos, vjneg, vjpos, t_step, x_scale, y_scale
                 double precision :: stepFunction
-                stepFunction=v+t_step*(((vipos-2*v+vineg)/x_scale)+((vjpos-2*v+vjneg)/y_scale))
+                stepFunction=v+t_step*(((vipos-2.0D0*v+vineg)/x_scale)+((vjpos-2.0D0*v+vjneg)/y_scale))
         end function stepFunction
 
 

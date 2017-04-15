@@ -97,9 +97,9 @@ program initialpar
         send_grid = concat_grid(:,1:div)
 
         do i = 1,grid_row
-           print *, (send_grid(i,j), j = 1, div)
+           !print *, (send_grid(i,j), j = 1, div)
         end do
-         print *, ''
+         !print *, ''
 
         
      else if (my_rank .NE. num_cores-1) then
@@ -126,9 +126,9 @@ program initialpar
         
         send_grid = concat_grid(:,2:div+1)
         do i = 1,grid_row
-           print *, (send_grid(i,j), j = 1, div)
+           !print *, (send_grid(i,j), j = 1, div)
         end do
-         print *, ''
+         !print *, ''
      else
 
         CALL MPI_Send(recv_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*3*(my_rank), &
@@ -150,26 +150,26 @@ program initialpar
         send_grid = concat_grid(:,2:rem+1)
 
         do i = 1,grid_row
-           print *, (send_grid(i,j), j = 1, rem)
+           !print *, (send_grid(i,j), j = 1, rem)
         end do
-         print *, ''
+         !print *, ''
 
       end if
 
       if (my_rank .NE. num_cores-1) then
-        CALL MPI_Gather(send_grid, grid_row*div, MPI_DOUBLE_PRECISION, master_grid, & 
-             grid_row*div, MPI_DOUBLE_PRECISION, master, MPI_COMM_WORLD, ierror)
-        
+       ! CALL MPI_Gather(send_grid, grid_row*div, MPI_DOUBLE_PRECISION, master_grid, & 
+       !      grid_row*div, MPI_DOUBLE_PRECISION, master, MPI_COMM_WORLD, ierror)
+              
         if (my_rank == master) then
-           CALL MPI_Recv(master_grid(:,grid_col-rem+1:grid_col), grid_row*rem, MPI_DOUBLE_PRECISION, &
-                num_cores-1, tag*4*(num_cores-1), MPI_COMM_WORLD, mpi_status, ierror)
-        end if
-     
-     else
+        CALL MPI_Recv(master_grid(:,grid_col-rem+1:grid_col), grid_row*rem, MPI_DOUBLE_PRECISION, &
+             num_cores-1, tag*4*(num_cores-1), MPI_COMM_WORLD, mpi_status, ierror)
+        endif
+      else
         CALL MPI_Send(send_grid, grid_row*rem, MPI_DOUBLE_PRECISION, master, my_rank*4*tag, &
              MPI_COMM_WORLD, ierror)
        
-     end if
+      end if
+
 
      if (my_rank == master) then 
         open(unit = 23, file = 'test2.txt')
@@ -186,6 +186,7 @@ program initialpar
 
   ! Close file
   close(21)
+  close(23)
 
   CALL MPI_Finalize(ierror)  
 
