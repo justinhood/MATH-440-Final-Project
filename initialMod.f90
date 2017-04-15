@@ -16,17 +16,20 @@ contains
                 enddo
         end subroutine initializeGrid
        
-        subroutine doStep(master_grid, new_grid, grid_row, grid_col, t_step, x_scale, y_scale)
+        subroutine doStep(concat_grid, c_grid_row, c_grid_col, t_step, x_scale, y_scale)
                 implicit none
-                integer :: i,j, grid_row, grid_col
+                integer :: i,j
+                integer, intent(in) :: c_grid_row, c_grid_col
                 double precision, intent(in) :: t_step, x_scale, y_scale
-                double precision, dimension(grid_row, grid_col), intent(in) :: master_grid
-                double precision, dimension(grid_row, grid_col), intent(inout) :: new_grid
+                double precision, dimension(c_grid_row, c_grid_col), intent(inout) :: concat_grid
+                double precision, dimension(c_grid_row, c_grid_col) :: temp
+
+                temp=concat_grid
                 
-                do i=2, grid_row-1
-                        do j=2, grid_col-1
-                                new_grid(i,j)=stepFunction(master_grid(i,j), master_grid(i-1,j), master_grid(i+1,j) &
-                                        , master_grid(i,j-1), master_grid(i,j+1), t_step, x_scale, y_scale)
+                do i=2,c_grid_row-1
+                        do j=2, c_grid_col-1
+                                concat_grid(i,j)=stepFunction(temp(i,j), temp(i-1,j), temp(i+1,j) &
+                                        , temp(i,j-1), temp(i,j+1), t_step, x_scale, y_scale)
                         enddo
                 enddo
 
