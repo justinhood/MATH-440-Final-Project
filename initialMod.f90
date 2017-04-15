@@ -1,19 +1,16 @@
 module initialMod
 contains
-        subroutine initializeGrid(master_grid)
+        subroutine initializeGrid(master_grid, grid_row, grid_col, x_scale, y_scale, x_min, y_min)
                 implicit none
-                double precision, allocatable, dimension(:,:), intent(inout) :: master_grid
+                double precision, intent(in) :: grid_row, grid_col, x_scale, y_scale, x_min, y_min
+                double precision, dimension(grid_row, grid_col), intent(inout) :: master_grid
                 integer :: i, j
-                allocate(master_grid(10,10))
+
                 
 
-                do i=1, size(master_grid, 1)
-                        do j=1, size(master_grid, 2)
-                                if(i .eq. 5 .and. j .eq. 5) then 
-                                        master_grid(i,j)=100
-                                else
-                                        master_grid(i,j)=0
-                                endif
+                do i=0, grid_row-1
+                        do j=0, grid_col-1
+                                master_grid(i+1,j+1)=(DBLE(j*x_scale)+x_min)+(DBLE(i*y_scale)+y_min)
                         enddo
                 enddo
         end subroutine initializeGrid
