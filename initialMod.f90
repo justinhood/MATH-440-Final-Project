@@ -16,10 +16,10 @@ contains
                 enddo
         end subroutine initializeGrid
        
-        subroutine doStep(master_grid, new_grid, grid_row, grid_col, t_step, x_step, y_step)
+        subroutine doStep(master_grid, new_grid, grid_row, grid_col, t_step, x_scale, y_scale)
                 implicit none
                 integer :: i,j, grid_row, grid_col
-                double precision, intent(in) :: t_step, x_step, y_step
+                double precision, intent(in) :: t_step, x_scale, y_scale
                 double precision, dimension(grid_row, grid_col), intent(in) :: master_grid
                 double precision, dimension(grid_row, grid_col), intent(inout) :: new_grid
                 
