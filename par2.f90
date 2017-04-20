@@ -1,5 +1,5 @@
 program par2
-  use initialMod
+  use Mod2
   use mpi
   implicit none
 

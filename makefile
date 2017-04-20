@@ -1,6 +1,6 @@
 FC90 = mpif90
 
-main_file = par2.f90 initialMod.f90
+main_file = par2.f90 Mod2.f90
 
 
 all: par2_exe 

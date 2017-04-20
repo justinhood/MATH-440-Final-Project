@@ -1,5 +1,6 @@
-sizer=5;
-depth=10;
+sizer=100;
+MAX=10;
+depth=100000;
 
 fileId=fopen('test.txt', 'r');
 matSize=[sizer,sizer];
@@ -8,7 +9,7 @@ formatSpec='';
 for i=1:sizer
     formatSpec=strcat(formatSpec, ' %f');
 end
-formatSpec=formatSpec(2:end)
+formatSpec=formatSpec(2:end);
 
 x=zeros(sizer, sizer, depth);
 
@@ -21,11 +22,11 @@ x(:,:,2);
 
 figure(1)
 
-a=linspace(0,4,sizer);
-b=linspace(0,4,sizer);
+a=linspace(0,MAX,sizer);
+b=linspace(0,MAX,sizer);
 
 for t=1:depth
-    s=surf(a,b,x(:,:,t))
+    s=surf(a,b,x(:,:,t));
     %zlim([0 10])
-    pause(0.05)
+    pause(0.15)
 end
