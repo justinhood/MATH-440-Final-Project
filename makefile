@@ -1,11 +1,11 @@
 FC90 = mpif90
 
-main_file = initialpar.f90 initialMod.f90
+main_file = par2.f90 initialMod.f90
 
 
-all: main_exe 
+all: par2_exe 
 
-main_exe:$(main_file)
+par2_exe:$(main_file)
 	$(FC90)	$(main_file)	-o	$@
 
 clean:
