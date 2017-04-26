@@ -11,7 +11,7 @@ contains
 
                 do i=1, grid_row
                         do j=1, grid_col
-                                if(i .Eq. 50 .and. j .eq. 50) then
+                                if(i .Eq. 5 .and. j .eq. 5) then
                                         master_grid(i,j)=100.0D0
                                 else
                                         master_grid(i,j)=0.0D0
