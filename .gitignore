@@ -26,3 +26,7 @@
 
 *_exe
 
+test.txt
+implicit.txt
+*.mod
+timer*
