@@ -1,8 +1,8 @@
 sizer=10;
-MAX=10;
-depth=100;
+MAX=5;
+depth=1000;
 
-fileId=fopen('test.txt', 'r');
+fileId=fopen('implicit.txt', 'r');
 matSize=[sizer,sizer];
 
 formatSpec='';
@@ -17,8 +17,7 @@ for i=1:depth
     temp=fscanf(fileId, formatSpec, matSize);
     x(:,:,i)=temp;
 end
-x(:,:,1);
-x(:,:,2);
+
 
 figure(1)
 
@@ -28,5 +27,5 @@ b=linspace(0,MAX,sizer);
 for t=1:depth
     s=surf(a,b,x(:,:,t));
     %zlim([0 10])
-    pause(0.15)
+    pause(0.05)
 end

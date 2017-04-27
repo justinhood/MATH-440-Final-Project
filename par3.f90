@@ -43,7 +43,7 @@ program par3
      CALL initializeGrid(old_grid,grid_row,grid_col,x_scale,y_scale,xmin,ymin)
      grid = old_grid
      ! Open up file
-     open(unit = 21, file = "test.txt")
+     open(unit = 21, file = "implicit.txt")
   end if
 
   CALL MPI_Barrier(MPI_COMM_WORLD, ierror)
@@ -64,7 +64,7 @@ program par3
      !write to file the current timestep
      if (my_rank == last_core) then 
         do i = 1, grid_row
-           write(21, *) (u(i,j), j = 1, grid_col)
+           write(21, *) (grid(i,j), j = 1, grid_col)
         end do
      end if
      write(21,*) '' 
@@ -100,7 +100,7 @@ program par3
              MPI_COMM_WORLD, mpi_status, ierror)
 
         ! Do one step of the numerical method - unew is calculated and returned
-        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, div+1)
+        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, div, my_rank, num_cores)
 
         
      else if (my_rank .NE. num_cores-1) then
@@ -132,8 +132,9 @@ program par3
         CALL MPI_Recv(u_con(:,div+2), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*5*(my_rank+1), &
              MPI_COMM_WORLD, mpi_status, ierror)
         
+
         ! Do one step of the numerical method
-        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, div+2)
+        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, div, my_rank, num_cores)
         
      else
 
@@ -149,27 +150,30 @@ program par3
              MPI_COMM_WORLD, mpi_status, ierror)
         CALL MPI_Recv(u_con(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*4*(my_rank), &
              MPI_COMM_WORLD, mpi_status, ierror)
-
+        
         ! Do one step of the numerical method
-        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, rem+1)
+        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, rem, my_rank, num_cores)
         
       end if
-
+      CALL MPI_BARRIER(MPI_COMM_WORLD, ierror)
    ! last core gathers instead of master
      CALL MPI_Gather(unew, grid_row*div, MPI_DOUBLE_PRECISION, new_grid, & 
          grid_row*div, MPI_DOUBLE_PRECISION, num_cores-1, MPI_COMM_WORLD, ierror)
      
      if (my_rank == last_core) then 
          new_grid(:,grid_col-rem+1:grid_col) = unew
-     end if
+         old_grid = grid  
+         grid = new_grid
 
-  end do
+     end if
+      
+       end do
 
   ! Close file
   close(21)
  ! close(23)
   end_time=MPI_Wtime()
-  open(unit=22, file='timer.txt')
+  open(unit=22, file='timerimp.txt')
   if(my_rank==master) then
         write(22,*) end_time-start_time
   endif
