@@ -1,6 +1,6 @@
 sizer=100;
 MAX=10;
-depth=100000;
+depth=10000;
 
 fileId=fopen('test.txt', 'r');
 matSize=[sizer,sizer];
