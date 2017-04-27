@@ -170,7 +170,11 @@ program par2
   ! Close file
   close(21)
  ! close(23)
-
+  end_time=MPI_Wtime()
+  open(unit=22, file='timer.txt')
+  if(my_rank==master) then
+        write(22,*) end_time-start_time
+  endif
   CALL MPI_Finalize(ierror)  
 
 end program par2
