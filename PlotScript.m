@@ -2,7 +2,7 @@ sizer=100;
 MAX=10;
 depth=1000;
 
-fileId=fopen('implicit.txt', 'r');
+fileId=fopen('test.txt', 'r');
 matSize=[sizer,sizer];
 
 formatSpec='';
@@ -26,6 +26,6 @@ b=linspace(0,MAX,sizer);
 
 for t=1:depth
     s=surf(a,b,x(:,:,t));
-    %zlim([0 10])
-    pause(0.05)
+    %zlim([-1 3])
+    pause(0.01)
 end

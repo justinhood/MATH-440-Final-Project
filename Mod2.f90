@@ -14,7 +14,7 @@ contains
                                 if(i .Eq. 50 .and. j .eq. 50) then
                                         master_grid(i,j)=10.0D0
                                 else
-                                        master_grid(i,j)=0.0D0
+                                        master_grid(i,j)=0
                                 endif
                         enddo
                 enddo
@@ -63,19 +63,11 @@ contains
                                 uxx=(uold_con(i+1, j)-2.0D0*uold_con(i,j)+uold_con(i-1,j))/(x_scale**2)
                                 uyy=(uold_con(i, j+1)-2.0D0*uold_con(i,j)+uold_con(i,j-1))/(y_scale**2)
                                 b=uold_con(i,j)+0.5D0*tstep*(uxx+uyy)
-                                temp(i,j)=b-(alpha*u_con(i-1,j)+alpha*u_con(i+1,j)+beta*u_con(i,j+1)&
-                                                +beta*u_con(i,j-1))/(1+2*(alpha+beta))
+                                temp(i,j)=(b-(alpha*u_con(i-1,j)+alpha*u_con(i+1,j)+beta*u_con(i,j+1)&
+                                                +beta*u_con(i,j-1)))/(1+2*(alpha+beta))
                         enddo
                 enddo
                 
-                if(rank == 0) then
-                        unew=temp(:,1:c_grid_col-1)
-                else if (rank .ne. num_cores-1) then
-                        unew=temp(:,2:c_grid_col-1)
-                else
-                        unew=temp(:, 2:c_grid_col)
-                endif
-
         end subroutine doImplicitStep
 
 end module Mod2

@@ -106,8 +106,14 @@ program par3
         ! Do one step of the numerical method - unew is calculated and returned
         CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, &
              grid_row, div+1, my_rank, temp)
+        !do i = 1, grid_row
+        !     write(*, *) (temp(i,j), j = 1, div+1)
+        !end do
+        !write(*,*) ''
         unew = temp(:,1:div)
-        
+       
+
+
      else if (my_rank .NE. num_cores-1) then
 
         ! send uold 
@@ -141,6 +147,10 @@ program par3
         ! Do one step of the numerical method
         CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, &
              grid_row, div+2, my_rank, temp)
+        !do i = 1, grid_row
+        !     write(*, *) (temp(i,j), j = 1, div+2)
+        !end do
+        !write(*,*) ''
         unew = temp(:,2:1+div)
         
      else
@@ -161,6 +171,10 @@ program par3
         ! Do one step of the numerical method
         CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, &
              grid_row, rem+1, my_rank, temp)
+        !do i = 1, grid_row
+        !     write(*, *) (temp(i,j), j = 1, rem+1)
+        !end do
+        !write(*,*) '***************************************************************'
         unew = temp(:,2:rem+1)
         
      end if
