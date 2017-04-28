@@ -1,5 +1,5 @@
-sizer=10;
-MAX=5;
+sizer=100;
+MAX=10;
 depth=1000;
 
 fileId=fopen('implicit.txt', 'r');

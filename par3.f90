@@ -42,6 +42,7 @@ program par3
      allocate(old_grid(grid_row,grid_col),grid(grid_row,grid_col),new_grid(grid_row,grid_col))
      CALL initializeGrid(old_grid,grid_row,grid_col,x_scale,y_scale,xmin,ymin)
      grid = old_grid
+     new_grid=old_grid
      ! Open up file
      open(unit = 21, file = "implicit.txt")
   end if
@@ -100,7 +101,7 @@ program par3
              MPI_COMM_WORLD, mpi_status, ierror)
 
         ! Do one step of the numerical method - unew is calculated and returned
-        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, div, my_rank, num_cores)
+        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, div+1, my_rank, num_cores)
 
         
      else if (my_rank .NE. num_cores-1) then
@@ -134,7 +135,7 @@ program par3
         
 
         ! Do one step of the numerical method
-        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, div, my_rank, num_cores)
+        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, div+2, my_rank, num_cores)
         
      else
 
@@ -152,7 +153,7 @@ program par3
              MPI_COMM_WORLD, mpi_status, ierror)
         
         ! Do one step of the numerical method
-        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, rem, my_rank, num_cores)
+        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, rem+1, my_rank, num_cores)
         
       end if
       CALL MPI_BARRIER(MPI_COMM_WORLD, ierror)
