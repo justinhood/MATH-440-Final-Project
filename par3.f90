@@ -13,7 +13,7 @@ program par3
   integer, dimension(MPI_STATUS_SIZE) :: mpi_status
   double precision :: start_time, end_time, x_scale, y_scale, alpha, beta
   double precision :: xmin, xmax, ymin, ymax, t_step, t_final
-  double precision, allocatable, dimension(:,:) :: uold, u, uold_con, u_con, unew, old_grid, grid, new_grid 
+  double precision, allocatable, dimension(:,:) :: uold, u, uold_con, u_con, unew, old_grid, grid, new_grid, temp
   
   CALL MPI_Init(ierror)
   start_time = MPI_Wtime()
@@ -52,11 +52,14 @@ program par3
   div = grid_col/num_cores
   rem = div + mod(grid_col, num_cores)
   if (my_rank == master) then
-     allocate(uold(grid_row, div),u(grid_row, div), uold_con(grid_row,div+1), u_con(grid_row,div+1), unew(grid_row,div))
+     allocate(uold(grid_row, div),u(grid_row, div), uold_con(grid_row,div+1), u_con(grid_row,div+1), &
+          temp(grid_row,div+1), unew(grid_row,div))
   else if (my_rank .NE. num_cores-1) then
-     allocate(uold(grid_row, div),u(grid_row, div), uold_con(grid_row,div+2), u_con(grid_row,div+2), unew(grid_row,div))
+     allocate(uold(grid_row, div),u(grid_row, div), uold_con(grid_row,div+2), u_con(grid_row,div+2), &
+          temp(grid_row,div+2), unew(grid_row,div))
   else
-     allocate(uold(grid_row, rem),u(grid_row, rem), uold_con(grid_row,rem+1), u_con(grid_row,rem+1), unew(grid_row,rem))
+     allocate(uold(grid_row, rem),u(grid_row, rem), uold_con(grid_row,rem+1), u_con(grid_row,rem+1), &
+          temp(grid_row,rem+1), unew(grid_row,rem))
   end if
 
   !start the looping over time steps
@@ -100,8 +103,9 @@ program par3
              MPI_COMM_WORLD, mpi_status, ierror)
 
         ! Do one step of the numerical method - unew is calculated and returned
-        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, div, my_rank, num_cores)
-
+        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, &
+             grid_row, div+1, my_rank, temp)
+        unew = temp(:,1:div)
         
      else if (my_rank .NE. num_cores-1) then
 
@@ -134,7 +138,9 @@ program par3
         
 
         ! Do one step of the numerical method
-        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, div, my_rank, num_cores)
+        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, &
+             grid_row, div+2, my_rank, temp)
+        unew = temp(:,2:1+div)
         
      else
 
@@ -152,11 +158,15 @@ program par3
              MPI_COMM_WORLD, mpi_status, ierror)
         
         ! Do one step of the numerical method
-        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, grid_row, rem, my_rank, num_cores)
+        CALL doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, t_step, alpha, beta, &
+             grid_row, rem+1, my_rank, temp)
+        unew = temp(:,2:rem+1)
         
-      end if
-      CALL MPI_BARRIER(MPI_COMM_WORLD, ierror)
-   ! last core gathers instead of master
+     end if
+     
+     CALL MPI_BARRIER(MPI_COMM_WORLD, ierror)
+     
+     ! last core gathers instead of master
      CALL MPI_Gather(unew, grid_row*div, MPI_DOUBLE_PRECISION, new_grid, & 
          grid_row*div, MPI_DOUBLE_PRECISION, num_cores-1, MPI_COMM_WORLD, ierror)
      

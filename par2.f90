@@ -72,16 +72,6 @@ program par2
 
      if (my_rank == last_core) then
         recv_grid = master_grid(:,grid_col-rem+1:grid_col)
-       ! do i = 1, grid_row
-          ! print *, my_rank, (recv_grid(i,j), j = 1, rem)
-       ! end do
-
-     else
-       ! do i = 1, grid_row
-         !  print *, my_rank, (recv_grid(i,j), j = 1, div)
-      !  end do
-
-        
      end if 
 
      !communicate and update grid
@@ -97,11 +87,6 @@ program par2
         CALL doStep(concat_grid, grid_row, div+1, t_step, x_scale, y_scale)
 
         send_grid = concat_grid(:,1:div)
-
-      !  do i = 1,grid_row
-       !    print *, my_rank, (send_grid(i,j), j = 1, div)
-      !  end do
-      !  print *, ''
 
         
      else if (my_rank .NE. num_cores-1) then
@@ -122,10 +107,7 @@ program par2
         CALL doStep(concat_grid, grid_row, div+2, t_step, x_scale, y_scale)
         
         send_grid = concat_grid(:,2:div+1)
-      !  do i = 1,grid_row
-      !     print *, my_rank, (send_grid(i,j), j = 1, div)
-      !  end do
-      !  print *, ''
+
      else
 
         CALL MPI_Send(recv_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*3*(my_rank), &
@@ -141,11 +123,6 @@ program par2
         
         send_grid = concat_grid(:,2:rem+1)
 
-       ! do i = 1,grid_row
-      !     print *, my_rank, (send_grid(i,j), j = 1, rem)
-      !  end do
-      !  print *, ''
-
       end if
 
    ! last core gathers instead of master
@@ -156,14 +133,6 @@ program par2
          master_grid(:,grid_col-rem+1:grid_col) = send_grid
      end if
 
-    ! if (my_rank == last_core) then 
-    !    open(unit = 23, file = 'test2.txt')
-        
-      !  do i = 1, grid_row
-      !     write(23, *) (master_grid(i,j), j = 1, grid_col)
-      !  end do
-
-    ! end if
 
   end do
 
