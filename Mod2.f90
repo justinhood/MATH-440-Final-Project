@@ -48,14 +48,14 @@ contains
 
 
         subroutine doImplicitStep(uold_con, u_con, unew, x_scale, y_scale, tstep, alpha, beta,&
-                        c_grid_row, c_grid_col, rank, num_cores)
+                        c_grid_row, c_grid_col, rank, temp)
                 implicit none
                 integer :: i,j
-                integer, intent(in) :: rank, c_grid_row, c_grid_col, num_cores
+                integer, intent(in) :: rank, c_grid_row, c_grid_col
                 double precision, intent(in) :: alpha, beta, x_scale, y_scale, tstep
                 double precision, dimension(:,:), intent(in) :: uold_con, u_con
-                double precision, dimension(:,:), intent(inout) :: unew
-                double precision, dimension(c_grid_row, c_grid_col) :: temp
+		double precision, dimension(c_grid_row,c_grid_col), intent(inout) :: temp
+                double precision, dimension(:,:), intent(in) :: unew
                 double precision :: uxx, uyy, b
 
                 do i=2, c_grid_row-1
@@ -63,9 +63,8 @@ contains
                                 uxx=(uold_con(i+1, j)-2.0D0*uold_con(i,j)+uold_con(i-1,j))/(x_scale**2)
                                 uyy=(uold_con(i, j+1)-2.0D0*uold_con(i,j)+uold_con(i,j-1))/(y_scale**2)
                                 b=uold_con(i,j)+0.5D0*tstep*(uxx+uyy)
-                                !WTF
                                 temp(i,j)=b-(alpha*u_con(i-1,j)+alpha*u_con(i+1,j)+beta*u_con(i,j+1)&
-                                           +beta*u_con(i,j-1))/(1+2*(alpha+beta))
+                                                +beta*u_con(i,j-1))/(1+2*(alpha+beta))
                         enddo
                 enddo
                 
