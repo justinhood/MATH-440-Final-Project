@@ -64,75 +64,80 @@ program par2
            write(21, *) (master_grid(i,j), j = 1, grid_col)
         end do
      end if
-     write(21,*) '' 
+     write(21,*) ''
 
-     !give all the cores the info
-     CALL MPI_Scatter(master_grid, grid_row*div, MPI_DOUBLE_PRECISION, recv_grid, &
-          grid_row*div, MPI_DOUBLE_PRECISION, last_core, MPI_COMM_WORLD, ierror)
-
-     if (my_rank == last_core) then
-        recv_grid = master_grid(:,grid_col-rem+1:grid_col)
-     end if 
-
-     !communicate and update grid
-     if (my_rank == master) then
-        
-        CALL MPI_Send(recv_grid(:,div), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*2*(my_rank+1), &
-             MPI_COMM_WORLD, ierror)
-        concat_grid(:,1:div) = recv_grid
-        CALL MPI_Recv(concat_grid(:,div+1), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*3*(my_rank+1), &
-             MPI_COMM_WORLD, mpi_status, ierror)
-
-        ! Do one step of the numerical method
-        CALL doStep(concat_grid, grid_row, div+1, t_step, x_scale, y_scale)
-
-        send_grid = concat_grid(:,1:div)
-
-        
-     else if (my_rank .NE. num_cores-1) then
-        
-        CALL MPI_Send(recv_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*3*my_rank, &
-             MPI_COMM_WORLD, ierror)
-        CALL MPI_Send(recv_grid(:,div), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*2*(my_rank+1), &
-             MPI_COMM_WORLD, ierror)
-        
-        concat_grid(:,2:1+div) = recv_grid
-        
-        CALL MPI_Recv(concat_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*2*my_rank, &
-             MPI_COMM_WORLD, mpi_status, ierror)
-        CALL MPI_Recv(concat_grid(:,div+2), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*3*(my_rank+1), &
-             MPI_COMM_WORLD, mpi_status, ierror)
-
-        ! Do one step of the numerical method
-        CALL doStep(concat_grid, grid_row, div+2, t_step, x_scale, y_scale)
-        
-        send_grid = concat_grid(:,2:div+1)
-
+     if (num_cores == 1) then
+        CALL doStep(master_grid, grid_row, grid_col, t_step, x_scale, y_scale)
      else
 
-        CALL MPI_Send(recv_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*3*(my_rank), &
-             MPI_COMM_WORLD, ierror)
-        
-        concat_grid(:,2:rem+1) = recv_grid
-        
-        CALL MPI_Recv(concat_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*2*(my_rank), &
-             MPI_COMM_WORLD, mpi_status, ierror)
+        !give all the cores the info
+        CALL MPI_Scatter(master_grid, grid_row*div, MPI_DOUBLE_PRECISION, recv_grid, &
+             grid_row*div, MPI_DOUBLE_PRECISION, last_core, MPI_COMM_WORLD, ierror)
 
-        ! Do one step of the numerical method
-        CALL doStep(concat_grid, grid_row, rem+1, t_step, x_scale, y_scale)
-        
-        send_grid = concat_grid(:,2:rem+1)
+        if (my_rank == last_core) then
+           recv_grid = master_grid(:,grid_col-rem+1:grid_col)
+        end if
 
-      end if
+        !communicate and update grid
+        if (my_rank == master) then
 
-   ! last core gathers instead of master
-     CALL MPI_Gather(send_grid, grid_row*div, MPI_DOUBLE_PRECISION, master_grid, & 
-         grid_row*div, MPI_DOUBLE_PRECISION, num_cores-1, MPI_COMM_WORLD, ierror)
-     
-     if (my_rank == last_core) then 
-         master_grid(:,grid_col-rem+1:grid_col) = send_grid
+           CALL MPI_Send(recv_grid(:,div), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*2*(my_rank+1), &
+                MPI_COMM_WORLD, ierror)
+           concat_grid(:,1:div) = recv_grid
+           CALL MPI_Recv(concat_grid(:,div+1), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*3*(my_rank+1), &
+                MPI_COMM_WORLD, mpi_status, ierror)
+
+           ! Do one step of the numerical method
+           CALL doStep(concat_grid, grid_row, div+1, t_step, x_scale, y_scale)
+
+           send_grid = concat_grid(:,1:div)
+
+
+        else if (my_rank .NE. num_cores-1) then
+
+           CALL MPI_Send(recv_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*3*my_rank, &
+                MPI_COMM_WORLD, ierror)
+           CALL MPI_Send(recv_grid(:,div), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*2*(my_rank+1), &
+                MPI_COMM_WORLD, ierror)
+
+           concat_grid(:,2:1+div) = recv_grid
+
+           CALL MPI_Recv(concat_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*2*my_rank, &
+                MPI_COMM_WORLD, mpi_status, ierror)
+           CALL MPI_Recv(concat_grid(:,div+2), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*3*(my_rank+1), &
+                MPI_COMM_WORLD, mpi_status, ierror)
+
+           ! Do one step of the numerical method
+           CALL doStep(concat_grid, grid_row, div+2, t_step, x_scale, y_scale)
+
+           send_grid = concat_grid(:,2:div+1)
+
+        else
+
+           CALL MPI_Send(recv_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*3*(my_rank), &
+                MPI_COMM_WORLD, ierror)
+
+           concat_grid(:,2:rem+1) = recv_grid
+
+           CALL MPI_Recv(concat_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*2*(my_rank), &
+                MPI_COMM_WORLD, mpi_status, ierror)
+
+           ! Do one step of the numerical method
+           CALL doStep(concat_grid, grid_row, rem+1, t_step, x_scale, y_scale)
+
+           send_grid = concat_grid(:,2:rem+1)
+
+        end if
+
+        ! last core gathers instead of master
+        CALL MPI_Gather(send_grid, grid_row*div, MPI_DOUBLE_PRECISION, master_grid, & 
+             grid_row*div, MPI_DOUBLE_PRECISION, num_cores-1, MPI_COMM_WORLD, ierror)
+
+        if (my_rank == last_core) then 
+           master_grid(:,grid_col-rem+1:grid_col) = send_grid
+        end if
+
      end if
-
 
   end do
 
