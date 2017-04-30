@@ -20,12 +20,14 @@ end
 
 
 figure(1)
-
+mov(1:depth) = struct('cdata',[], 'colormap',[]);
 a=linspace(0,MAX,sizer);
 b=linspace(0,MAX,sizer);
 
 for t=1:depth
-    s=surf(a,b,x(:,:,t));
+    surf(a,b,x(:,:,t));
     %zlim([-1 3])
-    pause(0.01)
+    mov(t)=getframe(1);
 end
+close(1)
+movie2avi(mov, 'ExplicitAnimation.avi', 'compression', 'None', 'fps', 50);
