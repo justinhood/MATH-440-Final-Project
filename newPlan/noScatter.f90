@@ -5,15 +5,16 @@ program par2
 
   integer :: i, j, n, grid_row, grid_col
   integer :: ierror, my_rank, num_cores, num_steps, last_core
-  integer :: div, rem
+  integer :: div, rem, first, last
   integer :: source
   integer :: master = 0
   integer :: tag = 100
   integer :: fail_code
+  integer, allocatable, dimension(:) :: index_arr
   integer, dimension(MPI_STATUS_SIZE) :: mpi_status
   double precision :: start_time, end_time, x_scale, y_scale
   double precision :: xmin, xmax, ymin, ymax, t_step, t_final
-  double precision, allocatable, dimension(:,:) :: master_grid, recv_grid, concat_grid, send_grid
+  double precision, allocatable, dimension(:,:) :: master_grid,  concat_grid
   
   CALL MPI_Init(ierror)
   start_time = MPI_Wtime()
@@ -21,7 +22,7 @@ program par2
   CALL MPI_Comm_SIZE(MPI_COMM_WORLD, num_cores, ierror)
 
   last_core = num_cores-1
-  open(unit = 20, file = 'input.txt')
+  open(unit = 20, file = 'newInput.txt')
   read(20,*) grid_row
   read(20,*) grid_col
   read(20,*) xmin
@@ -36,7 +37,7 @@ program par2
   y_scale = (ymax-ymin)/(grid_col-1)
 
   ! Initialize the grid
-  if (my_rank == last_core) then
+  if (my_rank == master) then
      allocate(master_grid(grid_row,grid_col))
      CALL initializeGrid(master_grid,grid_row,grid_col,x_scale,y_scale,xmin,ymin)
      ! Open up file
@@ -50,96 +51,102 @@ program par2
   rem = mod(grid_col, num_cores)
  
   !Start Allocation
-  if(my_rank .le. (rem-1)) then
-          if(my_rank == master) then
-                  allocate(concat_grid(grid_row, div+2))
-                  
+  if(rem .ne. 0) then
+	  !with remainder
+	  if(my_rank .le. (rem-1)) then
+		  if(my_rank == master) then
+			  allocate(concat_grid(grid_row, div+2) !1 from wrap and one from overlap
+		  else
+			  allocate(concat_grid(grid_row, div+3) !1 from wrap and 2 from overlap
+		  endif
+	  else if(my_rank .ne. last_core) then
+		  allocate(concat_grid(grid_row, div+2) !0 from wrap and 2 from overlap
+	  else
+		  allocate(concat_grid(grid_row, div+1) !0 from wrap and 1 from overlap
+	  endif
+  else
+	  !without remainder
+	  if(my_rank == master) then
+		  allocate(concat_grid(grid_row, div+1) !0 from wrap and 1 from overlap
+	  else if(my_rank .ne. last_core) then
+		  allocate(concat_grid(grid_row, div+2) !0 from wrap and 2 from overlap
+	  else
+		  allocate(concat_grid(grid_row, div+1) !0 from wrap and 1 from overlap
+	  endif
+  endif
 
+  !Compute the indexes for sending
+  first=1
+  last=1
+  if(my_rank == master) then
+	  allocate(index_arr(num_cores*2)
+	  if(rem .ne. 0) then
+		  last=div+2
+		  index_arr(1)=first
+		  index_arr(2)=last
+		  first=last-1
+		  if((rem-1) .ne. 0) then
+			  do i=1, rem-1
+				  last=first+div+2
+				  index_arr(2*i+1)=first
+				  index_arr(2*i+2)=last
+				  first=last-1
+			  enddo
+		  endif
+		  if((rem-1) .ne. (last_core-1)) then
+			  do i=rem, last_core-1
+				  last=first+div+1
+				  index_arr(2*i+1)=first
+				  index_arr(2*i+2)=last
+				  first=last-1
+			  enddo
+		  endif
+		  index_arr(2*last_core+1)=first
+		  index_arr(2*last_core+2)=grid_col
+	  else
+		  last=div+1
+		  index_arr(1)=first
+		  index_arr(2)=last
+		  first=last-1
+		  do i=1, last_core-1
+			  last=first+div+1
+			  index_arr(2*i+1)=first
+			  index_arr(2*i+2)=last
+			  first=last-1
+		  enddo
+		  index_arr(2*last_core+1)=first
+		  index_arr(2*last_core+2)=grid_col
+	  endif
+  endif
+  
+  if (my_rank == last_core) then 
+        do i = 1, grid_row
+           write(21, *) (master_grid(i,j), j = 1, grid_col)
+        end do
+  end if
+  write(21,*) ''
 
 
 
   !start the looping over time steps
   do n = 1, num_steps
-     !write to file the current timestep
-     if (my_rank == last_core) then 
-        do i = 1, grid_row
-           write(21, *) (master_grid(i,j), j = 1, grid_col)
-        end do
-     end if
-     write(21,*) ''
+	  if(my_rank==master) then
+		  concat_grid=master_grid(:, index_arr(1):index_arr(2))
+		  do i=1, last_core
+			  CALL MPI_SEND(master_grid(:,index_arr(2*i+1):index_arr(2*i+2), grid_row*(index_arr(2*i+2)-index_arr(2*i+1)),&
+				  MPI_DOUBLE_PRECISION, i, tag*i, MPI_COMM_WORLD, ierror)
+		  enddo
+	  else
+		  CALL MPI_RECV(concat_grid(:,:), grid_row*(index_arr(2*my_rank+2)-index_arr(2*my_rank+1)), MPI_DOUBLE_PRECISION, &
+			  master, tag*my_rank, MPI_COMM_WORLD, mpi_status, ierror)
+	  endif
 
-     if (num_cores == 1) then
-        CALL doStep(master_grid, grid_row, grid_col, t_step, x_scale, y_scale)
-     else
-
-        !give all the cores the info
-        CALL MPI_Scatter(master_grid, grid_row*div, MPI_DOUBLE_PRECISION, recv_grid, &
-             grid_row*div, MPI_DOUBLE_PRECISION, last_core, MPI_COMM_WORLD, ierror)
-
-        if (my_rank == last_core) then
-           recv_grid = master_grid(:,grid_col-rem+1:grid_col)
-        end if
-
-        !communicate and update grid
-        if (my_rank == master) then
-
-           CALL MPI_Send(recv_grid(:,div), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*2*(my_rank+1), &
-                MPI_COMM_WORLD, ierror)
-           concat_grid(:,1:div) = recv_grid
-           CALL MPI_Recv(concat_grid(:,div+1), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*3*(my_rank+1), &
-                MPI_COMM_WORLD, mpi_status, ierror)
-
-           ! Do one step of the numerical method
-           CALL doStep(concat_grid, grid_row, div+1, t_step, x_scale, y_scale)
-
-           send_grid = concat_grid(:,1:div)
-
-
-        else if (my_rank .NE. num_cores-1) then
-
-           CALL MPI_Send(recv_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*3*my_rank, &
-                MPI_COMM_WORLD, ierror)
-           CALL MPI_Send(recv_grid(:,div), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*2*(my_rank+1), &
-                MPI_COMM_WORLD, ierror)
-
-           concat_grid(:,2:1+div) = recv_grid
-
-           CALL MPI_Recv(concat_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*2*my_rank, &
-                MPI_COMM_WORLD, mpi_status, ierror)
-           CALL MPI_Recv(concat_grid(:,div+2), grid_row, MPI_DOUBLE_PRECISION, my_rank+1, tag*3*(my_rank+1), &
-                MPI_COMM_WORLD, mpi_status, ierror)
-
-           ! Do one step of the numerical method
-           CALL doStep(concat_grid, grid_row, div+2, t_step, x_scale, y_scale)
-
-           send_grid = concat_grid(:,2:div+1)
-
-        else
-
-           CALL MPI_Send(recv_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*3*(my_rank), &
-                MPI_COMM_WORLD, ierror)
-
-           concat_grid(:,2:rem+1) = recv_grid
-
-           CALL MPI_Recv(concat_grid(:,1), grid_row, MPI_DOUBLE_PRECISION, my_rank-1, tag*2*(my_rank), &
-                MPI_COMM_WORLD, mpi_status, ierror)
-
-           ! Do one step of the numerical method
-           CALL doStep(concat_grid, grid_row, rem+1, t_step, x_scale, y_scale)
-
-           send_grid = concat_grid(:,2:rem+1)
-
-        end if
-
-        ! last core gathers instead of master
-        CALL MPI_Gather(send_grid, grid_row*div, MPI_DOUBLE_PRECISION, master_grid, & 
-             grid_row*div, MPI_DOUBLE_PRECISION, num_cores-1, MPI_COMM_WORLD, ierror)
-
-        if (my_rank == last_core) then 
-           master_grid(:,grid_col-rem+1:grid_col) = send_grid
-        end if
-
-     end if
+	  !call doStep(concat_grid, grid_row, size(concat_grid,2), t_step, x_scale, y_scale)
+	if(my_rank==master) then
+		do i=1, grid_row
+			write(*,*) (concat_grid(i,j), j=1, size(concat_grid,2))
+		enddo
+	endif
 
   end do
 

@@ -11,11 +11,12 @@ contains
 
                 do i=1, grid_row
                         do j=1, grid_col
-                                if(i .Eq. 50 .and. j .eq. 50) then
-                                        master_grid(i,j)=10.0D0
-                                else
-                                        master_grid(i,j)=0
-                                endif
+                                !if(i .Eq. 50 .and. j .eq. 50) then
+                                !        master_grid(i,j)=10.0D0
+                                !else
+                                !        master_grid(i,j)=0
+                                !endif
+				master_grid(i,j)=j
                         enddo
                 enddo
         end subroutine initializeGrid
