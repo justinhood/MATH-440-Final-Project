@@ -30,3 +30,6 @@ test.txt
 implicit.txt
 *.mod
 timer*
+*.jpg
+*.avi
+*.21
