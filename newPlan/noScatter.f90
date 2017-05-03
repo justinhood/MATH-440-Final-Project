@@ -130,7 +130,7 @@ program par2
 
   !start the looping over time steps
   do n = 1, num_steps
-	  if(my_rank==master) then
+          if(my_rank==master) then
 		  concat_grid=master_grid(:, index_arr(1):index_arr(2))
 		  do i=1, last_core
 			  CALL MPI_SEND(master_grid(:,index_arr(2*i+1):index_arr(2*i+2)), grid_row*(index_arr(2*i+2)-index_arr(2*i+1)+1),&
@@ -151,6 +151,7 @@ program par2
                           call MPI_Send(concat_grid(:, 2:(size(concat_grid,2))), grid_row*(size(concat_grid,2)-1),&
                                  MPI_DOUBLE_PRECISION, master, tag*my_rank*500, MPI_COMM_WORLD, ierror)
                   endif
+
           else
                   master_grid(:,index_arr(1):(index_arr(2)-1))=concat_grid(:,1:(size(concat_grid,2)-1))
                   if(last_core .gt. 1) then
@@ -160,10 +161,11 @@ program par2
                                         mpi_status, ierror)
                         enddo
                   endif
-                  call MPI_recv(master_grid(:, (index_arr(last_core*i+1)+1):grid_col), grid_row*(index_arr(2*last_core+2)&
+                  call MPI_recv(master_grid(:, (index_arr(2*last_core+1)+1):grid_col), grid_row*(index_arr(2*last_core+2)&
                           -index_arr(2*last_core+1)), MPI_DOUBLE_PRECISION, last_core, tag*last_core*500, MPI_COMM_WORLD,&
                           mpi_status, ierror)
           endif
+
   end do
 
   if(my_rank == master) then
