@@ -2,7 +2,7 @@ sizer=100;
 MAX=10;
 depth=1000;
 
-fileId=fopen('implicit.txt', 'r');
+fileId=fopen('test.txt', 'r');
 matSize=[sizer,sizer];
 
 formatSpec='';
@@ -25,9 +25,10 @@ a=linspace(0,MAX,sizer);
 b=linspace(0,MAX,sizer);
 
 for t=1:depth
-    surf(a,b,x(:,:,t));
+    surf(a,b,x(:,:,t))
+    pause(0.01)
     %zlim([-1 3])
     %mov(t)=getframe(1);
 end
-close(1)
+%close(1)
 %movie2avi(mov, 'ExplicitAnimation.avi', 'compression', 'None', 'fps', 50);

@@ -141,14 +141,15 @@ program par2
 			  master, tag*my_rank, MPI_COMM_WORLD, mpi_status, ierror)
 	  endif
 
-	  !call doStep(concat_grid, grid_row, size(concat_grid,2), t_step, x_scale, y_scale)
-	  if(my_rank .ne. master) then
+	  call doStep(concat_grid, grid_row, size(concat_grid,2), t_step, x_scale, y_scale)
+	  
+          if(my_rank .ne. master) then
                   if(my_rank .ne. last_core) then
                           call MPI_Send(concat_grid(:,2:(size(concat_grid,2)-1)), grid_row*(size(concat_grid,2)-2),&
-                                 MPI_DOUBLE_PRECISION, master, tag*i*500, MPI_COMM_WORLD, ierror)
+                                 MPI_DOUBLE_PRECISION, master, tag*my_rank*500, MPI_COMM_WORLD, ierror)
                   else
                           call MPI_Send(concat_grid(:, 2:(size(concat_grid,2))), grid_row*(size(concat_grid,2)-1),&
-                                 MPI_DOUBLE_PRECISION, master, tag*i*500, MPI_COMM_WORLD, ierror)
+                                 MPI_DOUBLE_PRECISION, master, tag*my_rank*500, MPI_COMM_WORLD, ierror)
                   endif
           else
                   master_grid(:,index_arr(1):(index_arr(2)-1))=concat_grid(:,1:(size(concat_grid,2)-1))
@@ -165,9 +166,10 @@ program par2
           endif
           if(my_rank==master) then
                   do i=1, grid_row
-                          write(*,*) (master_grid(i,j), j=1, grid_col)
+                          write(21,*) (master_grid(i,j), j=1, grid_col)
                   enddo
           endif
+          write(21,*) ''
   end do
 
   ! Close file
