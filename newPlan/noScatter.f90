@@ -164,13 +164,13 @@ program par2
                           -index_arr(2*last_core+1)), MPI_DOUBLE_PRECISION, last_core, tag*last_core*500, MPI_COMM_WORLD,&
                           mpi_status, ierror)
           endif
-          if(my_rank==master) then
-                  do i=1, grid_row
-                          write(21,*) (master_grid(i,j), j=1, grid_col)
-                  enddo
-          endif
-          write(21,*) ''
   end do
+
+  if(my_rank == master) then
+          do i=1, grid_row
+                  write(21,*) (master_grid(i,j), j=1, grid_col)
+          enddo
+  endif
 
   ! Close file
   close(21)
